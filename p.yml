@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: update os
+    apt:
+      update_cache: yes
+  - name: install software
+    package:
+      name: "{{ item }}"
+      state: present 
+    with_items:
+      - php
+      - apache2
+
