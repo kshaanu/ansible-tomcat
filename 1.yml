@@ -1,0 +1,105 @@
+---
+- hosts: all
+  become: true
+  vars:
+   username: anusha 
+   password: kakunulla 
+  tasks:
+  - name: update os
+    apt:
+      update_cache: yes
+  - name: install software
+    package:
+      name: "{{ item }}"
+      state: present 
+    loop:
+      - openjdk-11-jdk
+  - name: create tomcat group
+    group:
+     name: tomcat
+     state: present
+  - name: create_a_user
+    user:
+      name: tomcat
+      shell: /bin/false
+      group: tomcat
+      home: /opt/tomcat
+      state: present
+  - name: Create a directory 
+    file:
+      path: /opt/tomcat 
+      state: directory
+      mode: '0777'
+  - name: switch user  
+    user:
+      name: tomcat
+      home: /opt/tomcat
+      state: present 
+  - name: change directory 
+    raw: cd /tmp
+  - name: unarchive
+    unarchive:
+      src: http://mirror.cc.columbia.edu/pub/software/apache/tomcat/tomcat-9/v9.0.27/bin/apache-tomcat-9.0.27.tar.gz
+      dest: /opt/tomcat
+      remote_src: yes
+      extra_opts:
+      - --strip-components=1
+  - name: change directory 
+    raw: cd /opt/tomcat
+  - name: permisions of directory 
+    file:
+      path: /opt/tomcat
+      state: directory
+      owner: tomcat
+      group: tomcat 
+  - name: permit the directory 
+    file:
+      path: /opt/tomcat 
+      owner: tomcat     
+
+  - name: Copy the file
+    copy:
+      src: /home/ansible/samp
+      dest: /etc/systemd/system/tomcat.service
+      owner: tomcat
+      group: tomcat
+      mode: '0777'
+  - name: copy contents
+    copy:
+      src: /home/ansible/samp
+      dest: /etc/systemd/system/tomcat.service
+      owner: tomcat
+      group: tomcat
+      mode: '0777'
+  - name: to reload the file
+    systemd:
+      name: tomcat     
+      state: restarted
+      daemon_reload: yes
+  - name: start the service
+    systemd:
+      name: tomcat
+      state: started
+      enabled: yes 
+  - name: create users 
+    template:
+      src: /home/ansible/tomcat-users.xml.j2
+      dest: /opt/tomcat/conf/tomcat-users.xml
+  - name: copy file contents 
+    copy:
+      src: /home/ansible/samp2
+      dest: /opt/tomcat/webapps/manager/META-INF/context.xml 
+      remote_src: yes
+  - name: copy file contents 
+    copy:
+      src: /home/ansible/samp2
+      dest: /opt/tomcat/webapps/host-manager/META-INF/context.xml  
+      remote_src: yes
+  - name: restart the service
+    systemd:
+      state: restarted
+      name: tomcat
+
+
+  
+
